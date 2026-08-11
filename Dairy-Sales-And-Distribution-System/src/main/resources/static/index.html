@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GopalG - Shop Order Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+
+        body { margin: 0; background: #f4f6f8; color: #222; }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 18px 40px;
+        }
+        header h1 { margin: 0; font-size: 26px; }
+        header p  { margin: 6px 0 0; color: #d1d5db; }
+
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+        .card h2 { margin-top: 0; color: #111827; }
+
+        label {
+            display: block;
+            margin-top: 16px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        input:invalid { border-color: #fca5a5; }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 120px auto;
+            gap: 10px;
+            align-items: end;
+            margin-top: 12px;
+        }
+        .row label { margin-top: 0; }
+
+        .btn-remove {
+            width: auto;
+            padding: 12px 14px;
+            background: #fee2e2;
+            color: #991b1b;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 0;
+        }
+        .btn-remove:hover { background: #fca5a5; }
+
+        .btn-add-item {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px;
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px dashed #86efac;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-add-item:hover { background: #dcfce7; }
+
+        button[type="submit"] {
+            margin-top: 22px;
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover    { background: #1d4ed8; }
+        button[type="submit"]:disabled { background: #9ca3af; cursor: not-allowed; }
+
+        .btn-refresh {
+            margin-top: 0;
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-refresh:hover { background: #1d4ed8; }
+
+        .message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .cart-summary {
+            margin-top: 16px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #374151;
+            display: none;
+        }
+        .cart-summary strong { color: #111827; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 14px;
+        }
+        th { background: #f9fafb; color: #374151; }
+
+        .badge {
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #e0f2fe;
+            color: #075985;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .divider { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0 4px; }
+
+        .empty { color: #6b7280; margin-top: 12px; }
+
+        @media (max-width: 850px) {
+            .grid   { grid-template-columns: 1fr; }
+            header  { padding: 18px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>GopalG Order Portal</h1>
+    <p>Shop owners can select product variants and place orders</p>
+</header>
+
+<div class="container">
+    <div class="grid">
+
+        <!-- ── Create Order ── -->
+        <div class="card">
+            <h2>Create Order</h2>
+
+            <form id="orderForm">
+
+                <label for="shopId">Shop ID</label>
+                <input type="number" id="shopId" placeholder="Enter your shop ID"
+                       min="1" step="1" required>
+
+                <label for="deliveryDate">Delivery Date</label>
+                <input type="date" id="deliveryDate" required>
+
+                <hr class="divider">
+                <strong style="color:#374151; font-size:14px;">Order Items</strong>
+
+                <div id="itemsContainer"></div>
+
+                <button type="button" class="btn-add-item" onclick="addItemRow()">
+                    + Add Another Item
+                </button>
+
+                <div id="cartSummary" class="cart-summary"></div>
+
+                <button type="submit" id="submitBtn">Place Order</button>
+            </form>
+
+            <div id="messageBox" class="message"></div>
+        </div>
+
+        <!-- ── Recent Orders ── -->
+        <div class="card">
+            <h2>Recent Orders</h2>
+            <button class="btn-refresh" onclick="loadOrders()">Refresh Orders</button>
+            <div id="ordersContainer">
+                <p class="empty">Loading orders...</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ─── Backend Configuration ────────────────────────────────────────────────
+    const API_BASE_URL       = "http://localhost:8080";
+    const PRODUCTS_ENDPOINT  = "/products";   // GET → ProductResponseDto[]
+    const VARIANTS_ENDPOINT  = "/variants";   // GET → ProductVariantResponseDto[]
+    const ORDERS_ENDPOINT    = "/orders";     // GET / POST
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const orderForm         = document.getElementById("orderForm");
+    const shopIdInput       = document.getElementById("shopId");
+    const deliveryDateInput = document.getElementById("deliveryDate");
+    const itemsContainer    = document.getElementById("itemsContainer");
+    const submitBtn         = document.getElementById("submitBtn");
+    const messageBox        = document.getElementById("messageBox");
+    const ordersContainer   = document.getElementById("ordersContainer");
+    const cartSummary       = document.getElementById("cartSummary");
+
+    // Caches populated from API
+    // productsCache  → ProductResponseDto  { productId, productName, productUnit, activeStatus, ... }
+    // variantsCache  → ProductVariantResponseDto (active only)
+    //                  { id, productId, packSize, unit, pricePerPack, isActive, ... }
+    let productsCache = [];
+    let variantsCache = [];
+    let rowCount = 0;
+
+    // Minimum delivery date = today
+    deliveryDateInput.setAttribute("min", new Date().toISOString().split("T")[0]);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadData();   // fetch products + variants in parallel, then render first row
+        loadOrders();
+
+        // Prevent negative/zero — Shop ID
+        shopIdInput.addEventListener("input", () => {
+            let val = parseInt(shopIdInput.value, 10);
+            if (isNaN(val) || val < 1) shopIdInput.value = "";
+            else shopIdInput.value = val;
+        });
+    });
+
+    // ── Fetch products & variants in parallel ─────────────────────────────────
+    async function loadData() {
+        try {
+            const [productsRes, variantsRes] = await Promise.all([
+                fetch(`${API_BASE_URL}${PRODUCTS_ENDPOINT}`),
+                fetch(`${API_BASE_URL}${VARIANTS_ENDPOINT}`)
+            ]);
+
+            if (!productsRes.ok) throw new Error(`Products: HTTP ${productsRes.status}`);
+            if (!variantsRes.ok) throw new Error(`Variants: HTTP ${variantsRes.status}`);
+
+            const allProducts = await productsRes.json();
+            const allVariants = await variantsRes.json();
+
+            // ProductResponseDto: activeStatus (boolean)
+            productsCache = allProducts.filter(p => p.activeStatus === true);
+
+            // ProductVariantResponseDto: isActive (boolean)
+            variantsCache = allVariants.filter(v => v.isActive === true);
+
+            if (variantsCache.length === 0) {
+                showMessage("No active product variants found.", "error");
+            }
+
+        } catch (error) {
+            console.error("Data load error:", error);
+            showMessage("Could not load products/variants. Is Spring Boot running on port 8080?", "error");
+        } finally {
+            addItemRow(); // always add a first row even if data failed
+        }
+    }
+
+    // ── Build variant label using productName from productsCache ──────────────
+    // ProductVariantResponseDto fields: id, productId, packSize, unit, pricePerPack, isActive
+    // ProductResponseDto fields:        productId, productName, productUnit, activeStatus
+    function buildVariantLabel(variant) {
+        const product     = productsCache.find(p => p.productId === variant.productId);
+        const productName = product ? product.productName : `Product #${variant.productId}`;
+        const packSize    = variant.packSize   ?? "";
+        const unit        = variant.unit       ?? "";
+        const price       = variant.pricePerPack != null
+                            ? ` — ₹${variant.pricePerPack}`
+                            : "";
+
+        // e.g. "Rice 500 g — ₹120"
+        return `${productName} ${packSize} ${unit}${price}`.replace(/\s+/g, " ").trim();
+    }
+
+    // ── Add an item row ───────────────────────────────────────────────────────
+    function addItemRow() {
+        rowCount++;
+        const id = `item_${rowCount}`;
+
+        const row = document.createElement("div");
+        row.className = "row";
+        row.id = id;
+
+        let options = `<option value="">Select variant</option>`;
+        variantsCache.forEach(v => {
+            options += `<option value="${v.id}">${buildVariantLabel(v)}</option>`;
+        });
+
+        row.innerHTML = `
+            <div>
+                <label>Product Variant</label>
+                <select class="variantSelect" onchange="updateSummary()" required>
+                    ${options}
+                </select>
+            </div>
+            <div>
+                <label>Qty</label>
+                <input
+                    type="number"
+                    class="qtyInput"
+                    placeholder="1"
+                    min="1" step="1" value="1"
+                    oninput="sanitizeQty(this); updateSummary();"
+                    required
+                >
+            </div>
+            <button type="button" class="btn-remove"
+                    onclick="removeRow('${id}')" title="Remove item">✕</button>
+        `;
+
+        itemsContainer.appendChild(row);
+        updateSummary();
+    }
+
+    function removeRow(id) {
+        const row = document.getElementById(id);
+        if (row) row.remove();
+        if (itemsContainer.children.length === 0) addItemRow(); // keep at least one
+        updateSummary();
+    }
+
+    function sanitizeQty(input) {
+        let val = parseInt(input.value, 10);
+        if (isNaN(val) || val < 1) input.value = 1;
+        else input.value = val;
+    }
+
+    // ── Cart summary ──────────────────────────────────────────────────────────
+    function updateSummary() {
+        const rows = getItemRows();
+        if (rows.length === 0) { cartSummary.style.display = "none"; return; }
+
+        let html = "<strong>Cart Preview:</strong><br><br>";
+        let grandTotal = 0;
+        let hasValid = false;
+
+        rows.forEach(({ variantId, quantity }) => {
+            const variant = variantsCache.find(v => v.id == variantId);
+            if (!variant) return;
+            hasValid = true;
+            const sub = variant.pricePerPack != null
+                ? (variant.pricePerPack * quantity).toFixed(2)
+                : null;
+            if (sub) grandTotal += parseFloat(sub);
+            html += `• ${buildVariantLabel(variant)} × ${quantity} = ${sub ? "₹" + sub : "—"}<br>`;
+        });
+
+        if (hasValid) {
+            if (grandTotal > 0) html += `<br><strong>Total: ₹${grandTotal.toFixed(2)}</strong>`;
+            cartSummary.style.display = "block";
+            cartSummary.innerHTML = html;
+        } else {
+            cartSummary.style.display = "none";
+        }
+    }
+
+    // ── Collect item rows ─────────────────────────────────────────────────────
+    function getItemRows() {
+        const selects = itemsContainer.querySelectorAll(".variantSelect");
+        const qtys    = itemsContainer.querySelectorAll(".qtyInput");
+        const items   = [];
+
+        selects.forEach((sel, i) => {
+            const variantId = parseInt(sel.value, 10);
+            const quantity  = parseInt(qtys[i].value, 10);
+            if (variantId && quantity >= 1) {
+                items.push({ variantId, quantity });
+            }
+        });
+
+        return items;
+    }
+
+    // ── Place Order ───────────────────────────────────────────────────────────
+    orderForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const shopId = parseInt(shopIdInput.value, 10);
+        if (!shopId || shopId < 1) {
+            showMessage("Shop ID must be a positive number.", "error");
+            shopIdInput.focus();
+            return;
+        }
+
+        if (!deliveryDateInput.value) {
+            showMessage("Please select a delivery date.", "error");
+            deliveryDateInput.focus();
+            return;
+        }
+
+        const orderItems = getItemRows();
+        if (orderItems.length === 0) {
+            showMessage("Please add at least one item with a selected variant.", "error");
+            return;
+        }
+
+        // Duplicate variant check
+        const ids = orderItems.map(i => i.variantId);
+        if (ids.length !== new Set(ids).size) {
+            showMessage("Duplicate variants found. Please merge them into one row.", "error");
+            return;
+        }
+
+        // Matches OrderRequestDto: shopId, deliveryDate, orderItems[{ variantId, quantity }]
+        const payload = {
+            shopId:       shopId,
+            deliveryDate: deliveryDateInput.value,
+            orderItems:   orderItems
+        };
+
+        try {
+            submitBtn.disabled    = true;
+            submitBtn.textContent = "Placing Order...";
+
+            const response = await fetch(`${API_BASE_URL}${ORDERS_ENDPOINT}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Server responded ${response.status}: ${errText}`);
+            }
+
+            showMessage("Order placed successfully!", "success");
+            orderForm.reset();
+            itemsContainer.innerHTML = "";
+            rowCount = 0;
+            addItemRow();
+            cartSummary.style.display = "none";
+            await loadOrders();
+
+        } catch (error) {
+            console.error("Order error:", error);
+            showMessage(`Could not place order: ${error.message}`, "error");
+        } finally {
+            submitBtn.disabled    = false;
+            submitBtn.textContent = "Place Order";
+        }
+    });
+
+    // ── Load Orders ───────────────────────────────────────────────────────────
+    async function loadOrders() {
+        try {
+            const response = await fetch(`${API_BASE_URL}${ORDERS_ENDPOINT}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const orders = await response.json();
+            renderOrders(orders);
+
+        } catch (error) {
+            console.error("Orders error:", error);
+            ordersContainer.innerHTML = `
+                <p class="empty">Could not load orders. Make sure Spring Boot is running on port 8080.</p>
+            `;
+        }
+    }
+
+    // ── Render Orders Table ───────────────────────────────────────────────────
+    // Uses OrderResponseDto fields: orderNumber, shopId, totalAmount, paymentStatus, orderStatus, orderItems[]
+    function renderOrders(orders) {
+        if (!orders || orders.length === 0) {
+            ordersContainer.innerHTML = `<p class="empty">No orders found.</p>`;
+            return;
+        }
+
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Shop</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        orders.forEach(order => {
+            const itemCount = Array.isArray(order.orderItems) ? order.orderItems.length : "-";
+            const total     = order.totalAmount != null ? `₹${order.totalAmount}` : "-";
+
+            html += `
+                <tr>
+                    <td>${order.orderNumber        || "-"}</td>
+                    <td>${order.shopId             || "-"}</td>
+                    <td>${itemCount} item${itemCount !== 1 ? "s" : ""}</td>
+                    <td>${total}</td>
+                    <td><span class="badge">${order.paymentStatus || "-"}</span></td>
+                    <td><span class="badge">${order.orderStatus   || "-"}</span></td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        ordersContainer.innerHTML = html;
+    }
+
+    // ── Utility ───────────────────────────────────────────────────────────────
+    function showMessage(message, type) {
+        messageBox.textContent   = message;
+        messageBox.className     = `message ${type}`;
+        messageBox.style.display = "block";
+        setTimeout(() => { messageBox.style.display = "none"; }, 5000);
+    }
+</script>
+
+</body>
+</html>
