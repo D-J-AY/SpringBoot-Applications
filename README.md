@@ -103,8 +103,7 @@ The system is designed around a real-world business workflow involving **product
 
 
 
-## 📂 Repository Structure
-
+📂 Repository Structure
 
 SpringBoot-Applications/
 │
